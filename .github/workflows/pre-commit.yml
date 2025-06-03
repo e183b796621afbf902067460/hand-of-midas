@@ -25,7 +25,7 @@ jobs:
         run: pip3 install poetry==1.7.1
 
       - name: Install dependencies
-        run: poetry install --no-root
+        run: poetry install -vvv --no-interaction --no-root
 
       - name: Pre-commit run
         run: pre-commit run --all-files
