@@ -5,7 +5,6 @@ from attr import attrs
 from httpx import URL, AsyncClient, Response
 
 _GET: Final[str] = "GET"
-_POST: Final[str] = "POST"
 
 
 @attrs(slots=True, auto_attribs=True, kw_only=True)
@@ -18,8 +17,6 @@ class APIClientBase(ABC):
         response: Response | None = None
         if method == _GET:
             response = await self._session.get(url=url, params=parameters)
-        elif method == _POST:
-            response = await self._session.post(url=url, params=parameters)
 
         if response:
             response.raise_for_status()
