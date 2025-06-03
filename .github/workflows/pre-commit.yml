@@ -1,0 +1,31 @@
+name: pre-commit CI-pipeline
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+    branches:
+      - master
+      - dev
+
+jobs:
+
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install poetry
+        run: pip3 install poetry==1.7.1
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Pre-commit run
+        run: pre-commit run --all-files
