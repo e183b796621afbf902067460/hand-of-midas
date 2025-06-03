@@ -20,6 +20,10 @@ class APIClientBase(ABC):
             response = await self._session.get(url=url, params=parameters)
         elif method == _POST:
             response = await self._session.post(url=url, params=parameters)
+
+        if response:
+            response.raise_for_status()
+
         return response
 
     async def _get(self, endpoint: str, parameters: dict | None) -> Response | None:
