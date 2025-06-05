@@ -34,3 +34,9 @@ class BinanceSpotAPIClient(APIClientBase):
         return [
             BinanceKlinesOutputSchema.from_kline(kline=kline, symbol=input_schema.symbol) for kline in klines.json()
         ]
+
+
+class BinanceUsdtmAPIClient(BinanceSpotAPIClient):
+
+    _ping_endpoint: str = "/fapi/v1/ping"
+    _klines_endpoint: str = "/fapi/v1/klines"

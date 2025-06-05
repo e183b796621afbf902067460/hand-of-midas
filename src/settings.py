@@ -22,6 +22,10 @@ class AppSettings(BaseSettings):
     BINANCE_SPOT_API_TIMEOUT: int = 60
     BINANCE_SPOT_API_RETRIES: int = 3
 
+    BINANCE_USDTM_API_HTTP_URL: HttpUrl = HttpUrl("https://fapi.binance.com")
+    BINANCE_USDTM_API_TIMEOUT: int = 60
+    BINANCE_USDTM_API_RETRIES: int = 3
+
     TRIGGER_DATE: datetime = datetime.now()
 
     MILLISECONDS_IN_SECOND: int = 10**3
