@@ -10,7 +10,7 @@ pydantic = "^2.10.6"
 fastapi = "0.111.0"
 attrs = "^25.1.0"
 pydantic-settings = "^2.7.1"
-httpx = "^0.28.1"
+httpx = {extras = ["http2"], version = "^0.28.1"}
 uvicorn = "^0.34.0"
 uvloop = "^0.21.0"
 pandas = "^2.2.3"

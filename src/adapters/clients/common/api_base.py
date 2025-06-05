@@ -1,10 +1,10 @@
 from abc import ABC
-from typing import Final
+from typing import Literal
 
 from attr import attrs
 from httpx import URL, AsyncClient, Response
 
-_GET: Final[str] = "GET"
+_GET: Literal["GET"] = "GET"
 
 
 @attrs(slots=True, auto_attribs=True, kw_only=True)
@@ -23,5 +23,5 @@ class APIClientBase(ABC):
 
         return response
 
-    async def _get(self, endpoint: str, parameters: dict | None) -> Response | None:
+    async def _get(self, endpoint: str, parameters: dict | None = None) -> Response | None:
         return await self.__request(method=_GET, endpoint=endpoint, parameters=parameters)
