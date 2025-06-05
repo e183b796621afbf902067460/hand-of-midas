@@ -1,0 +1,14 @@
+version: "3.2"
+
+services:
+
+  app:
+    restart: always
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    networks:
+      - the-hand-of-midas-tier
+
+networks:
+  the-hand-of-midas-tier:
