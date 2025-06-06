@@ -11,6 +11,7 @@ ENV VIRTUAL_ENV=/code/src/venv \
 
 COPY ./pyproject.toml /code/pyproject.toml
 COPY ./poetry.lock /code/poetry.lock
+COPY ./ch /code/ch
 
 ARG POETRY_VERSION=1.7.1
 
