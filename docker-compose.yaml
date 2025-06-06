@@ -2,6 +2,40 @@ version: "3.2"
 
 services:
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.1-alpine
+    environment:
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_HOST: 0.0.0.0
+      CLICKHOUSE_DB: clickhouse
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - '8123:8123'
+      - '9000:9000'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://0.0.0.0:8123/ping || exit 1
+    restart: always
+    networks:
+      - the-hand-of-midas-tier
+
+  migrations:
+    command: bash -c "houseplant init && houseplant migrate:up"
+    environment:
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_DB: clickhouse
+    restart: always
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    networks:
+      - the-hand-of-midas-tier
+
   app:
     restart: always
     build:
