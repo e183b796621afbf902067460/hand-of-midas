@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import HttpUrl, IPvAnyAddress
+from pydantic import ClickHouseDsn, HttpUrl, IPvAnyAddress
 from pydantic_settings import BaseSettings
 
 
@@ -17,6 +17,8 @@ class AppSettings(BaseSettings):
     IS_DEVELOPMENT: bool = True
 
     LOGLEVEL: str = "INFO"
+
+    CLICKHOUSE_DSN: ClickHouseDsn
 
     BINANCE_SPOT_API_HTTP_URL: HttpUrl = HttpUrl("https://api.binance.com")
     BINANCE_SPOT_API_TIMEOUT: int = 60
