@@ -38,6 +38,8 @@ services:
 
   app:
     restart: always
+    environment:
+      CLICKHOUSE_DSN: clickhouse+asynch://clickhouse:clickhouse@0.0.0.0:8123/clickhouse
     build:
       context: ./
       dockerfile: Dockerfile
