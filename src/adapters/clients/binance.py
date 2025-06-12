@@ -15,6 +15,8 @@ class _BinanceAPIClientInvalidMethod(_BinanceAPIClientExceptionBase):
 class BinanceSpotAPIClient(APIClientBase):
 
     _ping_endpoint: str = "/api/v3/ping"
+
+    # https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints#klinecandlestick-data
     _klines_endpoint: str = "/api/v3/klines"
 
     async def ping(self) -> None:
@@ -32,11 +34,16 @@ class BinanceSpotAPIClient(APIClientBase):
             raise _BinanceAPIClientInvalidMethod(f"Invalid method was passed to `{self._klines_endpoint}` endpoint.")
 
         return [
-            BinanceKlinesOutputSchema.from_kline(kline=kline, symbol=input_schema.symbol) for kline in klines.json()
+            BinanceKlinesOutputSchema.from_kline(
+                kline=kline, ticker=input_schema.symbol, section=input_schema.section, interval=input_schema.interval
+            )
+            for kline in klines.json()
         ]
 
 
 class BinanceUsdtmAPIClient(BinanceSpotAPIClient):
 
     _ping_endpoint: str = "/fapi/v1/ping"
+
+    # https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Kline-Candlestick-Data
     _klines_endpoint: str = "/fapi/v1/klines"
