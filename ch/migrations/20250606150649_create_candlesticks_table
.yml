@@ -8,7 +8,7 @@ development: &development
     CREATE TABLE IF NOT EXISTS {table} (
 
       exchange String,
-      section: String,
+      section String,
 
       ticker String,
       interval String,
@@ -22,10 +22,20 @@ development: &development
       close_time DateTime
 
     ) ENGINE = MergeTree()
-    PARTITION BY
-      toYYYYMMDD(open_time)
-    ORDER BY
-      open_time;
+    PARTITION BY (
+      exchange,
+      section,
+      ticker,
+      interval
+    )
+    ORDER BY (
+      exchange,
+      section,
+      ticker,
+      interval,
+      open_time,
+      close_time
+    );
   down: |
     DROP TABLE IF EXISTS {table};
 
