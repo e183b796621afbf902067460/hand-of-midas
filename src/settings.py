@@ -32,6 +32,7 @@ class AppSettings(BaseSettings):
     TICKER: str = "BTCUSDT"
 
     TRIGGER_DATE: datetime = datetime.now()
+    YEARS_AGO: int = 10
 
     MILLISECONDS_IN_SECOND: Final[int] = 10**3
     DAYS_IN_YEAR: Final[int] = 365
