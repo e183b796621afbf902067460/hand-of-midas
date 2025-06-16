@@ -120,7 +120,7 @@ class BinanceKlinesInputSchema(BaseModel):
 
 class BinanceKlinesOutputSchema(BaseModel):
 
-    exchange: str = Field(default="Binance", init=False)
+    exchange: str = Field(default=settings.BINANCE_EXCHANGE_NAME, init=False)
 
     ticker: str
 

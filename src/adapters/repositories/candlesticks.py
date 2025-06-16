@@ -3,7 +3,7 @@ from datetime import datetime
 from clickhouse_connect.driver.query import QueryResult
 from pandas import DataFrame
 
-from src.adapters.repositories.common.clickhouse_base import ClickHouseBaseRepository
+from src.adapters.repositories.common.clickhouse_base import ClickHouseBaseRepository, unix_epoch_to_none
 from src.schemas.candlesticks import CandlesticksInputSchema, CandlesticksLatestTimestampInputSchema
 
 
@@ -17,10 +17,11 @@ class CandlesticksRepository(ClickHouseBaseRepository):
             WHERE
                 ticker = %(ticker)s AND
                 exchange = %(exchange)s AND
+                section = %(section)s AND
                 interval = %(interval)s
         """
         query_result: QueryResult = await self._query(query=query, parameters=input_schema.model_dump())
-        return ClickHouseBaseRepository._unix_epoch_to_none(timestamp=query_result.first_item["latest_timestamp"])
+        return unix_epoch_to_none(timestamp=query_result.first_item["latest_timestamp"])
 
     async def query_candlesticks(self, input_schema: CandlesticksInputSchema) -> DataFrame:
         query = """
@@ -29,13 +30,13 @@ class CandlesticksRepository(ClickHouseBaseRepository):
                 high,
                 low,
                 close,
-                open_time,
-                close_time
+                open_time
             FROM
                 clickhouse.candlesticks
             WHERE
                 ticker = %(ticker)s AND
                 exchange = %(exchange)s AND
+                section = %(section)s AND
                 interval = %(interval)s
         """
         return await self._query_dataframe(query=query, parameters=input_schema.model_dump())

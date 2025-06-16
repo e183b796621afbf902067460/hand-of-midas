@@ -1,3 +1,4 @@
+from asyncio import run
 from datetime import datetime
 
 from clickhouse_connect.driver.asyncclient import AsyncClient as AsyncClickHouseClient
@@ -16,24 +17,24 @@ from src.settings import settings
 
 
 # pylint: disable=too-many-locals
-async def main(ticker: str, exchange: BinanceSectionEnum, interval: BinanceIntervalEnum) -> None:
+async def main(ticker: str, section: BinanceSectionEnum, interval: BinanceIntervalEnum) -> None:
     binance_api_session: HTTPAsyncClient = HTTPAsyncClient(
         base_url=settings.BINANCE_SPOT_API_HTTP_URL.unicode_string()
-        if exchange is BinanceSectionEnum.BINANCE_SPOT
+        if section is BinanceSectionEnum.BINANCE_SPOT
         else settings.BINANCE_USDTM_API_HTTP_URL.unicode_string(),
         timeout=settings.BINANCE_SPOT_API_TIMEOUT
-        if exchange is BinanceSectionEnum.BINANCE_SPOT
+        if section is BinanceSectionEnum.BINANCE_SPOT
         else settings.BINANCE_USDTM_API_TIMEOUT,
         transport=AsyncHTTPTransport(
             retries=settings.BINANCE_SPOT_API_RETRIES
-            if exchange is BinanceSectionEnum.BINANCE_SPOT
+            if section is BinanceSectionEnum.BINANCE_SPOT
             else settings.BINANCE_USDTM_API_RETRIES,
             http2=True,
         ),
     )
     binance_api_client: BinanceSpotAPIClient | BinanceUsdtmAPIClient = (
         BinanceSpotAPIClient(session=binance_api_session)
-        if exchange is BinanceSectionEnum.BINANCE_SPOT
+        if section is BinanceSectionEnum.BINANCE_SPOT
         else BinanceUsdtmAPIClient(session=binance_api_session)
     )
     await binance_api_client.ping()
@@ -43,12 +44,14 @@ async def main(ticker: str, exchange: BinanceSectionEnum, interval: BinanceInter
     binance_service: BinanceService = BinanceService(client=binance_api_client)
 
     latest_timestamp: datetime = await candlesticks_service.get_latest_timestamp(
-        input_schema=CandlesticksLatestTimestampInputSchema(ticker=ticker, exchange=exchange, interval=interval)
+        input_schema=CandlesticksLatestTimestampInputSchema(
+            ticker=ticker, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
+        )
     )
     candlesticks: DataFrame = await binance_service.get_klines(
         input_schema=BinanceKlinesInputSchema(
             symbol=ticker,
-            section=exchange,
+            section=section,
             interval=interval,
             start_time=latest_timestamp,
             end_time=settings.TRIGGER_DATE,
@@ -59,3 +62,12 @@ async def main(ticker: str, exchange: BinanceSectionEnum, interval: BinanceInter
 
 
 # pylint: enable=too-many-locals
+
+
+if __name__ == "__main__":
+    section_name: BinanceSectionEnum = BinanceSectionEnum(  # type: ignore[call-overload]
+        value=settings.BINANCE_SECTION_NAME
+    )
+    timeframe: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
+
+    run(main(ticker=settings.TICKER, section=section_name, interval=timeframe))
