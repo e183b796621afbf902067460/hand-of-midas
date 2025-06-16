@@ -1,14 +1,32 @@
 version: "3.2"
 
+x-environment-common: &environment-common
+  CLICKHOUSE_USER: clickhouse
+  CLICKHOUSE_PASSWORD: clickhouse
+  CLICKHOUSE_DB: clickhouse
+
+  CLICKHOUSE_DSN: clickhouse+asynch://clickhouse:clickhouse@clickhouse:8123/clickhouse
+
+x-build-common: &build-common
+  build:
+    context: ./
+    dockerfile: Dockerfile
+  deploy:
+    restart_policy:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+      window: 5s
+  networks:
+    - hand-of-midas-tier
+
 services:
 
   clickhouse:
     image: clickhouse/clickhouse-server:23.1-alpine
     environment:
-      CLICKHOUSE_USER: clickhouse
-      CLICKHOUSE_PASSWORD: clickhouse
+      <<: *environment-common
       CLICKHOUSE_HOST: 0.0.0.0
-      CLICKHOUSE_DB: clickhouse
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     ports:
       - '8123:8123'
@@ -17,34 +35,31 @@ services:
       test: wget --no-verbose --tries=1 --spider http://0.0.0.0:8123/ping || exit 1
     restart: always
     networks:
-      - the-hand-of-midas-tier
+      - hand-of-midas-tier
 
-  migrations:
-    command: bash -c "houseplant init && houseplant migrate:up"
+  clickhouse-migrations:
+    <<: *build-common
     environment:
-      CLICKHOUSE_USER: clickhouse
-      CLICKHOUSE_PASSWORD: clickhouse
+      <<: *environment-common
       CLICKHOUSE_HOST: clickhouse
-      CLICKHOUSE_DB: clickhouse
-    restart: always
-    build:
-      context: ./
-      dockerfile: Dockerfile
+    command: bash -c "houseplant init && houseplant migrate:up"
     depends_on:
       clickhouse:
         condition: service_healthy
-    networks:
-      - the-hand-of-midas-tier
 
-  app:
-    restart: always
+  binance-spot-candlesticks-dag:
+    <<: *build-common
     environment:
-      CLICKHOUSE_DSN: clickhouse+asynch://clickhouse:clickhouse@0.0.0.0:8123/clickhouse
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    networks:
-      - the-hand-of-midas-tier
+      <<: *environment-common
+      BINANCE_SECTION_NAME: SPOT
+
+      TICKER: BTCUSDT
+      INTERVAL: 4h
+    command: python3 src/entrypoints/binance_candlesticks_base.py
+    depends_on:
+      clickhouse-migrations:
+        condition: service_completed_successfully
+    restart: always
 
 networks:
-  the-hand-of-midas-tier:
+  hand-of-midas-tier:

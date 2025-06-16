@@ -7,7 +7,8 @@ class CandlesticksLatestTimestampInputSchema(BaseModel):
     """Input schema to get latest loaded candlesticks timestamp."""
 
     ticker: str
-    exchange: BinanceSectionEnum
+    exchange: str
+    section: BinanceSectionEnum
 
     interval: BinanceIntervalEnum
 
@@ -19,7 +20,8 @@ class CandlesticksInputSchema(BaseModel):
     """Input schema to get latest loaded candlesticks."""
 
     ticker: str
-    exchange: BinanceSectionEnum
+    exchange: str
+    section: BinanceSectionEnum
 
     interval: BinanceIntervalEnum
 

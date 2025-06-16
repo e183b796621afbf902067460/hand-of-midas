@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings
 class AppSettings(BaseSettings):
 
     APP_NAME: str = "hand-of-midas"
-    APP_VERSION: str = "v0.0.1beta"
+    APP_VERSION: str = "v0.0.1-alpha"
     APP_PORT: int = 8000
     APP_HOST: IPvAnyAddress = "0.0.0.0"  # type: ignore  # noqa: S104
 
@@ -19,7 +19,10 @@ class AppSettings(BaseSettings):
 
     LOGLEVEL: str = "INFO"
 
-    CLICKHOUSE_DSN: ClickHouseDsn = ClickHouseDsn("clickhouse+asynch://clickhouse:clickhouse@0.0.0.0:8123/clickhouse")
+    CLICKHOUSE_DSN: ClickHouseDsn
+
+    BINANCE_EXCHANGE_NAME: Final[str] = "Binance"
+    BINANCE_SECTION_NAME: str = "SPOT"
 
     BINANCE_SPOT_API_HTTP_URL: HttpUrl = HttpUrl("https://api.binance.com")
     BINANCE_SPOT_API_TIMEOUT: int = 60
@@ -29,7 +32,8 @@ class AppSettings(BaseSettings):
     BINANCE_USDTM_API_TIMEOUT: int = 60
     BINANCE_USDTM_API_RETRIES: int = 3
 
-    TICKER: str = "BTCUSDT"
+    TICKER: str
+    INTERVAL: str
 
     TRIGGER_DATE: datetime = datetime.now()
     YEARS_AGO: int = 10
