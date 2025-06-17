@@ -30,7 +30,7 @@ class CandlesticksRepository(ClickHouseBaseRepository):
                 high,
                 low,
                 close,
-                open_time
+                open_time AS datetime
             FROM
                 clickhouse.candlesticks
             WHERE
