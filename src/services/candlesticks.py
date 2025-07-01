@@ -21,7 +21,7 @@ class CandlesticksService:
 
     async def get_candlesticks(self, input_schema: CandlesticksInputSchema) -> DataFrame:
         candlesticks: DataFrame = await self._repository.query_candlesticks(input_schema=input_schema)
-        return candlesticks
+        return candlesticks.drop_duplicates()
 
     async def paste_candlesticks(self, dataframe: DataFrame) -> None:
         await self._repository.insert_candlesticks(dataframe=dataframe)
