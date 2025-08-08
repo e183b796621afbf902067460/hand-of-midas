@@ -40,5 +40,4 @@ RUN python3.10 -m venv --system-site-packages $VIRTUAL_ENV \
     && poetry install -vvv --no-interaction --no-root \
     && rm -rf /root/.cache/pypoetry
 
-COPY ./ch /code/ch
 COPY ./src /code/src

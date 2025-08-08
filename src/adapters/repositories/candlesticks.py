@@ -8,6 +8,7 @@ from src.schemas.candlesticks import CandlesticksInputSchema, CandlesticksLatest
 
 
 class CandlesticksRepository(ClickHouseBaseRepository):
+    # pylint: disable=duplicate-code
     async def query_latest_timestamp(self, input_schema: CandlesticksLatestTimestampInputSchema) -> datetime | None:
         query: str = """
             SELECT
@@ -23,6 +24,9 @@ class CandlesticksRepository(ClickHouseBaseRepository):
         query_result: QueryResult = await self._query(query=query, parameters=input_schema.model_dump())
         return unix_epoch_to_none(timestamp=query_result.first_item["latest_timestamp"])
 
+    # pylint: enable=duplicate-code
+
+    # pylint: disable=duplicate-code
     async def query_candlesticks(self, input_schema: CandlesticksInputSchema) -> DataFrame:
         query = """
             SELECT
@@ -30,7 +34,7 @@ class CandlesticksRepository(ClickHouseBaseRepository):
                 high,
                 low,
                 close,
-                open_time AS datetime
+                close_time + INTERVAL 1 SECOND AS datetime
             FROM
                 clickhouse.candlesticks
             WHERE
@@ -38,9 +42,13 @@ class CandlesticksRepository(ClickHouseBaseRepository):
                 exchange = %(exchange)s AND
                 section = %(section)s AND
                 interval = %(interval)s
+            ORDER BY
+                datetime ASC
         """
         return await self._query_dataframe(query=query, parameters=input_schema.model_dump())
 
-    async def insert_candlesticks(self, dataframe: DataFrame) -> None:
+    # pylint: enable=duplicate-code
+
+    async def insert_candlesticks(self, candlesticks: DataFrame) -> None:
         table: str = "clickhouse.candlesticks"
-        await self._insert_dataframe(table=table, dataframe=dataframe)
+        await self._insert_dataframe(table=table, dataframe=candlesticks)

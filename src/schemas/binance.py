@@ -98,13 +98,13 @@ class BinanceKlinesInputSchema(BaseModel):
 
     limit: int | None = Field(default=1_000)
 
-    @field_serializer("start_time")
+    @field_serializer("start_time")  # type: ignore
     def serialize_start_time_to_milliseconds(self, start_time: int | datetime) -> int | None:
         if isinstance(start_time, datetime):
             return int(start_time.timestamp() * settings.MILLISECONDS_IN_SECOND)
         return start_time
 
-    @field_serializer("end_time")
+    @field_serializer("end_time")  # type: ignore
     def serialize_end_time_to_milliseconds(self, end_time: int | datetime) -> int | None:
         if isinstance(end_time, datetime):
             return int(end_time.timestamp() * settings.MILLISECONDS_IN_SECOND)

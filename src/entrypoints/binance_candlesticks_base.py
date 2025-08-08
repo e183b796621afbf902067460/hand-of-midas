@@ -17,7 +17,9 @@ from src.settings import settings
 
 
 # pylint: disable=too-many-locals
-async def main(ticker: str, section: BinanceSectionEnum, interval: BinanceIntervalEnum) -> None:
+async def main() -> None:
+    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)  # type: ignore[call-overload]
+    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
     binance_api_session: HTTPAsyncClient = HTTPAsyncClient(
         base_url=settings.BINANCE_SPOT_API_HTTP_URL.unicode_string()
         if section is BinanceSectionEnum.BINANCE_SPOT
@@ -43,14 +45,14 @@ async def main(ticker: str, section: BinanceSectionEnum, interval: BinanceInterv
     candlesticks_service: CandlesticksService = CandlesticksService(repository=candlesticks_repository)
     binance_service: BinanceService = BinanceService(client=binance_api_client)
 
-    latest_timestamp: datetime = await candlesticks_service.get_latest_timestamp(
+    latest_timestamp: datetime = await candlesticks_service.extract_latest_timestamp(
         input_schema=CandlesticksLatestTimestampInputSchema(
-            ticker=ticker, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
+            ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
         )
     )
     candlesticks: DataFrame = await binance_service.get_klines(
         input_schema=BinanceKlinesInputSchema(
-            symbol=ticker,
+            symbol=settings.TICKER,
             section=section,
             interval=interval,
             start_time=latest_timestamp,
@@ -58,16 +60,11 @@ async def main(ticker: str, section: BinanceSectionEnum, interval: BinanceInterv
         )
     )
     candlesticks.drop_duplicates(inplace=True)
-    await candlesticks_service.paste_candlesticks(dataframe=candlesticks)
+    await candlesticks_service.load_candlesticks(candlesticks=candlesticks)
 
 
 # pylint: enable=too-many-locals
 
 
 if __name__ == "__main__":
-    section_name: BinanceSectionEnum = BinanceSectionEnum(  # type: ignore[call-overload]
-        value=settings.BINANCE_SECTION_NAME
-    )
-    timeframe: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
-
-    run(main(ticker=settings.TICKER, section=section_name, interval=timeframe))
+    run(main=main())

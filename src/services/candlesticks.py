@@ -13,15 +13,15 @@ class CandlesticksService:
 
     _repository: CandlesticksRepository
 
-    async def get_latest_timestamp(self, input_schema: CandlesticksLatestTimestampInputSchema) -> datetime:
+    async def extract_latest_timestamp(self, input_schema: CandlesticksLatestTimestampInputSchema) -> datetime:
         latest_timestamp: datetime | None = await self._repository.query_latest_timestamp(input_schema=input_schema)
         if latest_timestamp is None:
             return settings.TRIGGER_DATE - timedelta(days=settings.DAYS_IN_YEAR * settings.YEARS_AGO)
         return latest_timestamp + timedelta(milliseconds=1)
 
-    async def get_candlesticks(self, input_schema: CandlesticksInputSchema) -> DataFrame:
+    async def extract_candlesticks(self, input_schema: CandlesticksInputSchema) -> DataFrame:
         candlesticks: DataFrame = await self._repository.query_candlesticks(input_schema=input_schema)
         return candlesticks.drop_duplicates()
 
-    async def paste_candlesticks(self, dataframe: DataFrame) -> None:
-        await self._repository.insert_candlesticks(dataframe=dataframe)
+    async def load_candlesticks(self, candlesticks: DataFrame) -> None:
+        await self._repository.insert_candlesticks(candlesticks=candlesticks)
