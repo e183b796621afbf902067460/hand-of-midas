@@ -5,7 +5,8 @@ from numpy import floor
 from pandas import DataFrame
 
 from src.adapters.clients.binance import BinanceSpotAPIClient, BinanceUsdtmAPIClient
-from src.schemas.binance import BinanceIntervalEnum, BinanceKlinesInputSchema, BinanceKlinesOutputSchema
+from src.schemas.binance import BinanceKlinesInputSchema, BinanceKlinesOutputSchema
+from src.schemas.common.binance_base import BinanceIntervalEnum
 
 
 @attrs(slots=True, auto_attribs=True, kw_only=True)

@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS clickhouse.candlesticks
 (
     exchange   String,
     section    String,
-
     ticker     String,
     interval   String,
 
@@ -37,7 +36,6 @@ CREATE TABLE IF NOT EXISTS clickhouse.smoothed_candlesticks
 (
     exchange          String,
     section           String,
-
     ticker            String,
     interval          String,
 
@@ -67,6 +65,39 @@ CREATE TABLE IF NOT EXISTS clickhouse.smoothed_candlesticks
     micro_tema_close  Float64,
 
     datetime          DateTime
+)
+ENGINE = MergeTree
+PARTITION BY (
+    exchange,
+    section,
+    ticker,
+    interval,
+    toYYYYMM(datetime)
+)
+ORDER BY (
+    exchange,
+    section,
+    ticker,
+    interval,
+    datetime
+);
+
+CREATE TABLE IF NOT EXISTS clickhouse.booleans
+(
+    exchange                                            String,
+    section                                             String,
+    ticker                                              String,
+    interval                                            String,
+
+    is_global_sma_close_greater_than_global_sma_open    Bool,
+
+    is_macro_trima_close_greater_than_macro_trima_open  Bool,
+    is_macro_tema_close_greater_than_macro_tema_open    Bool,
+
+    is_micro_trima_close_greater_than_micro_trima_open  Bool,
+    is_micro_tema_close_greater_than_micro_tema_open    Bool,
+
+    datetime                                            DateTime
 )
 ENGINE = MergeTree
 PARTITION BY (

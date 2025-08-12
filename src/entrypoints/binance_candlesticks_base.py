@@ -9,8 +9,9 @@ from pandas import DataFrame
 from src.adapters.clients.binance import BinanceSpotAPIClient, BinanceUsdtmAPIClient
 from src.adapters.repositories.candlesticks import CandlesticksRepository
 from src.adapters.repositories.common.clickhouse_base import get_clickhouse_client
-from src.schemas.binance import BinanceIntervalEnum, BinanceKlinesInputSchema, BinanceSectionEnum
-from src.schemas.candlesticks import CandlesticksLatestTimestampInputSchema
+from src.schemas.binance import BinanceKlinesInputSchema
+from src.schemas.candlesticks import CandlesticksLatestTimestampQueryInputSchema
+from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
 from src.services.binance import BinanceService
 from src.services.candlesticks import CandlesticksService
 from src.settings import settings
@@ -46,7 +47,7 @@ async def main() -> None:
     binance_service: BinanceService = BinanceService(client=binance_api_client)
 
     latest_timestamp: datetime = await candlesticks_service.extract_latest_timestamp(
-        input_schema=CandlesticksLatestTimestampInputSchema(
+        input_schema=CandlesticksLatestTimestampQueryInputSchema(
             ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
         )
     )

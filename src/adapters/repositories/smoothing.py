@@ -1,14 +1,19 @@
 from pandas import DataFrame
 
 from src.adapters.repositories.common.clickhouse_base import ClickHouseBaseRepository
-from src.schemas.smoothing import SmoothedCandlesticksInputSchema
+from src.schemas.smoothing import SmoothedCandlesticksQueryInputSchema
 
 
 class SmoothedCandlesticksRepository(ClickHouseBaseRepository):
     # pylint: disable=duplicate-code
-    async def query_smoothed_candlesticks(self, input_schema: SmoothedCandlesticksInputSchema) -> DataFrame:
+    async def query_smoothed_candlesticks(self, input_schema: SmoothedCandlesticksQueryInputSchema) -> DataFrame:
         query = """
             SELECT
+                exchange,
+                section,
+                ticker,
+                interval,
+
                 global_sma_open,
                 global_sma_high,
                 global_sma_low,
@@ -38,9 +43,9 @@ class SmoothedCandlesticksRepository(ClickHouseBaseRepository):
             FROM
                 clickhouse.smoothed_candlesticks
             WHERE
-                ticker = %(ticker)s AND
                 exchange = %(exchange)s AND
                 section = %(section)s AND
+                ticker = %(ticker)s AND
                 interval = %(interval)s
             ORDER BY
                 datetime ASC
