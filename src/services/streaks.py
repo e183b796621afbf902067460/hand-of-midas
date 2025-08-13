@@ -2,7 +2,7 @@ from attr import attrs
 from pandas import DataFrame
 
 from src.adapters.repositories.streaks import StreaksRepository
-from src.schemas.streaks import StreaksQueryInputSchema
+from src.schemas.streaks import StreaksInputSchema, StreaksQueryInputSchema
 
 
 @attrs(slots=True, auto_attribs=True, kw_only=True)
@@ -20,4 +20,13 @@ class StreaksService:
     async def load_streaks(self, streaks: DataFrame) -> None:
         await self._repository.insert_streaks(streaks=streaks)
 
-    # TODO: add compute_streak() method
+    @staticmethod
+    def compute_streak(booleans: DataFrame, input_schema: StreaksInputSchema) -> DataFrame:
+        booleans["streak_start"] = booleans[input_schema.boolean_column].ne(
+            other=booleans[input_schema.boolean_column].shift(1)
+        )
+        booleans["streak_id"] = booleans["streak_start"].cumsum()
+        booleans[f"{input_schema.boolean_column}_streak"] = booleans.groupby("streak_id").cumcount() + 1
+
+        booleans.drop(columns=["streak_start", "streak_id"], axis=1, inplace=True)
+        return booleans

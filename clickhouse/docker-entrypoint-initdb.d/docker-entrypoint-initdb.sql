@@ -114,3 +114,36 @@ ORDER BY (
     interval,
     datetime
 );
+
+CREATE TABLE IF NOT EXISTS clickhouse.streaks
+(
+    exchange                                                    String,
+    section                                                     String,
+    ticker                                                      String,
+    interval                                                    String,
+
+    is_global_sma_close_greater_than_global_sma_open_streak     UInt256,
+
+    is_macro_trima_close_greater_than_macro_trima_open_streak   UInt256,
+    is_macro_tema_close_greater_than_macro_tema_open_streak     UInt256,
+
+    is_micro_trima_close_greater_than_micro_trima_open_streak   UInt256,
+    is_micro_tema_close_greater_than_micro_tema_open_streak     UInt256,
+
+    datetime                                                    DateTime
+)
+ENGINE = MergeTree
+PARTITION BY (
+    exchange,
+    section,
+    ticker,
+    interval,
+    toYYYYMM(datetime)
+)
+ORDER BY (
+    exchange,
+    section,
+    ticker,
+    interval,
+    datetime
+);

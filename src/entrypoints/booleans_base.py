@@ -16,8 +16,8 @@ from src.settings import settings
 
 
 async def main() -> None:
-    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)  # type: ignore[call-overload]
-    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
+    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)
+    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)
     clickhouse_client: AsyncClickHouseClient = await get_clickhouse_client()
     smoothing_service: SmoothingService = SmoothingService(
         repository=SmoothedCandlesticksRepository(client=clickhouse_client)
@@ -48,25 +48,25 @@ async def main() -> None:
         inplace=True,
     )
 
-    booleans: DataFrame = booleans_service.compute_booleans(
+    booleans: DataFrame = BooleansService.compute_booleans(
         candlesticks=smoothed_candlesticks.copy(deep=True),
         input_schema=BooleansInputSchema(first_column="global_sma_close", second_column="global_sma_open"),
     )
 
-    booleans = booleans_service.compute_booleans(
+    booleans = BooleansService.compute_booleans(
         candlesticks=booleans.copy(deep=True),
         input_schema=BooleansInputSchema(first_column="macro_trima_close", second_column="macro_trima_open"),
     )
-    booleans = booleans_service.compute_booleans(
+    booleans = BooleansService.compute_booleans(
         candlesticks=booleans.copy(deep=True),
         input_schema=BooleansInputSchema(first_column="macro_tema_close", second_column="macro_tema_open"),
     )
 
-    booleans = booleans_service.compute_booleans(
+    booleans = BooleansService.compute_booleans(
         candlesticks=booleans.copy(deep=True),
         input_schema=BooleansInputSchema(first_column="micro_trima_close", second_column="micro_trima_open"),
     )
-    booleans = booleans_service.compute_booleans(
+    booleans = BooleansService.compute_booleans(
         candlesticks=booleans.copy(deep=True),
         input_schema=BooleansInputSchema(first_column="micro_tema_close", second_column="micro_tema_open"),
     )

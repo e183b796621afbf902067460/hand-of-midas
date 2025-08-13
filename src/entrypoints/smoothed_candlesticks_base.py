@@ -17,8 +17,8 @@ from src.settings import settings
 
 
 async def main() -> None:
-    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)  # type: ignore[call-overload]
-    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
+    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)
+    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)
     clickhouse_client: AsyncClickHouseClient = await get_clickhouse_client()
     smoothing_service: SmoothingService = SmoothingService(
         repository=SmoothedCandlesticksRepository(client=clickhouse_client)
@@ -34,25 +34,25 @@ async def main() -> None:
         )
     )
 
-    smoothed_candlesticks: DataFrame = smoothing_service.compute_smoothed_candlesticks(
+    smoothed_candlesticks: DataFrame = SmoothingService.compute_smoothed_candlesticks(
         candlesticks=candlesticks.copy(deep=True),
         input_schema=SmoothingInputSchema(prefix="global", smoothing_moving_average_method=SMA, period=2**10),
     )
 
-    smoothed_candlesticks = smoothing_service.compute_smoothed_candlesticks(
+    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
         candlesticks=smoothed_candlesticks.copy(deep=True),
         input_schema=SmoothingInputSchema(prefix="macro", smoothing_moving_average_method=TRIMA, period=2**8),
     )
-    smoothed_candlesticks = smoothing_service.compute_smoothed_candlesticks(
+    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
         candlesticks=smoothed_candlesticks.copy(deep=True),
         input_schema=SmoothingInputSchema(prefix="macro", smoothing_moving_average_method=TEMA, period=2**8),
     )
 
-    smoothed_candlesticks = smoothing_service.compute_smoothed_candlesticks(
+    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
         candlesticks=smoothed_candlesticks.copy(deep=True),
         input_schema=SmoothingInputSchema(prefix="micro", smoothing_moving_average_method=TRIMA, period=2**4),
     )
-    smoothed_candlesticks = smoothing_service.compute_smoothed_candlesticks(
+    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
         candlesticks=smoothed_candlesticks.copy(deep=True),
         input_schema=SmoothingInputSchema(prefix="micro", smoothing_moving_average_method=TEMA, period=2**4),
     )
