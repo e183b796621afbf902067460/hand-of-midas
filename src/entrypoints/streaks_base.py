@@ -16,8 +16,8 @@ from src.settings import settings
 
 
 async def main() -> None:
-    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)
-    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)
+    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)  # type: ignore[call-overload]
+    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
     clickhouse_client: AsyncClickHouseClient = await get_clickhouse_client()
     booleans_service: BooleansService = BooleansService(repository=BooleansRepository(client=clickhouse_client))
     streaks_service: StreaksService = StreaksService(repository=StreaksRepository(client=clickhouse_client))

@@ -16,9 +16,7 @@ class CandlesticksService:
     async def extract_latest_timestamp(self, input_schema: CandlesticksLatestTimestampQueryInputSchema) -> datetime:
         latest_timestamp: datetime | None = await self._repository.query_latest_timestamp(input_schema=input_schema)
         if latest_timestamp is None:
-            return settings.TRIGGER_DATE - timedelta(  # type: ignore[no-any-return]
-                days=settings.DAYS_IN_YEAR * settings.YEARS_AGO
-            )
+            return settings.TRIGGER_DATE - timedelta(days=settings.DAYS_IN_YEAR * settings.YEARS_AGO)
         return latest_timestamp + timedelta(milliseconds=1)
 
     async def extract_candlesticks(self, input_schema: CandlesticksQueryInputSchema) -> DataFrame:

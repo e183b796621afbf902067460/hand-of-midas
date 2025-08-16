@@ -147,3 +147,36 @@ ORDER BY (
     interval,
     datetime
 );
+
+CREATE TABLE IF NOT EXISTS clickhouse.sar
+(
+    exchange           String,
+    section            String,
+    ticker             String,
+    interval           String,
+
+    global_sma_sar     Float64,
+
+    macro_trima_sar    Float64,
+    macro_tema_sar     Float64,
+
+    micro_trima_sar    Float64,
+    micro_tema_sar     Float64,
+
+    datetime           DateTime
+)
+ENGINE = MergeTree
+PARTITION BY (
+    exchange,
+    section,
+    ticker,
+    interval,
+    toYYYYMM(datetime)
+)
+ORDER BY (
+    exchange,
+    section,
+    ticker,
+    interval,
+    datetime
+);

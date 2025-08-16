@@ -24,7 +24,7 @@ class CandlesticksRepository(ClickHouseBaseRepository):
                 interval = %(interval)s
         """
         query_result: QueryResult = await self._query(query=query, parameters=input_schema.model_dump())
-        return unix_epoch_to_none(timestamp=query_result.first_item["latest_timestamp"])  # type: ignore[no-any-return]
+        return unix_epoch_to_none(timestamp=query_result.first_item["latest_timestamp"])
 
     # pylint: enable=duplicate-code
 
@@ -42,7 +42,7 @@ class CandlesticksRepository(ClickHouseBaseRepository):
                 low,
                 close,
 
-                (close_time + INTERVAL 1 SECOND) AS datetime
+                open_time AS datetime
             FROM
                 clickhouse.candlesticks
             WHERE

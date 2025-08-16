@@ -17,8 +17,8 @@ from src.settings import settings
 
 
 async def main() -> None:
-    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)
-    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)
+    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)  # type: ignore[call-overload]
+    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
     clickhouse_client: AsyncClickHouseClient = await get_clickhouse_client()
     smoothing_service: SmoothingService = SmoothingService(
         repository=SmoothedCandlesticksRepository(client=clickhouse_client)

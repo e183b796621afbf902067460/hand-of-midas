@@ -16,21 +16,19 @@ from src.settings import settings
 
 
 async def main() -> None:
-    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)
-    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)
+    section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)  # type: ignore[call-overload]
+    interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
     clickhouse_client: AsyncClickHouseClient = await get_clickhouse_client()
     smoothing_service: SmoothingService = SmoothingService(
         repository=SmoothedCandlesticksRepository(client=clickhouse_client)
     )
     booleans_service: BooleansService = BooleansService(repository=BooleansRepository(client=clickhouse_client))
-    # pylint: enable=duplicate-code
 
     smoothed_candlesticks: DataFrame = await smoothing_service.extract_smoothed_candlesticks(
         input_schema=SmoothedCandlesticksQueryInputSchema(
             ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
         )
     )
-    # TODO: maybe we should also save new highest/lowest highs/lows as independent features as well
     smoothed_candlesticks.drop(
         columns=[
             "global_sma_high",
@@ -47,6 +45,7 @@ async def main() -> None:
         axis=1,
         inplace=True,
     )
+    # pylint: enable=duplicate-code
 
     booleans: DataFrame = BooleansService.compute_booleans(
         candlesticks=smoothed_candlesticks.copy(deep=True),

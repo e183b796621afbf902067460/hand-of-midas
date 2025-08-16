@@ -19,6 +19,9 @@ matplotlib = "^3.10.3"
 scipy = "^1.15.3"
 finrl = {git = "https://github.com/AI4Finance-Foundation/FinRL#egg=finrl"}
 polars = "^1.31.0"
+backtesting = "^0.6.5"
+optuna = "^4.4.0"
+arch = "^7.2.0"
 
 [tool.poetry.group.linters.dependencies]
 pre-commit = "3.6.0"
