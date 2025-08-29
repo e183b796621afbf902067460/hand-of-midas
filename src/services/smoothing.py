@@ -20,20 +20,20 @@ class SmoothingService:
     async def load_smoothed_candlesticks(self, smoothed_candlesticks: DataFrame) -> None:
         await self._repository.insert_smoothed_candlesticks(smoothed_candlesticks=smoothed_candlesticks)
 
-    @staticmethod
-    def compute_smoothed_candlesticks(candlesticks: DataFrame, input_schema: SmoothingInputSchema) -> DataFrame:
-        prefix: str = f"{input_schema.prefix}_{input_schema.smoothing_moving_average_name}"
 
-        candlesticks[f"{prefix}_open"] = Series(
-            input_schema.smoothing_moving_average_method(candlesticks.open.values, input_schema.period)
-        ).shift(periods=input_schema.shift)
-        candlesticks[f"{prefix}_high"] = Series(
-            input_schema.smoothing_moving_average_method(candlesticks.high.values, input_schema.period)
-        ).shift(periods=input_schema.shift)
-        candlesticks[f"{prefix}_low"] = Series(
-            input_schema.smoothing_moving_average_method(candlesticks.low.values, input_schema.period)
-        ).shift(periods=input_schema.shift)
-        candlesticks[f"{prefix}_close"] = Series(
-            input_schema.smoothing_moving_average_method(candlesticks.close.values, input_schema.period)
-        ).shift(periods=input_schema.shift)
-        return candlesticks
+def compute_smoothed_candlesticks(candlesticks: DataFrame, input_schema: SmoothingInputSchema) -> DataFrame:
+    prefix: str = f"{input_schema.prefix}_{input_schema.smoothing_moving_average_name}"
+
+    candlesticks[f"{prefix}_open"] = Series(
+        input_schema.smoothing_moving_average_method(candlesticks.open.values, input_schema.period)
+    )
+    candlesticks[f"{prefix}_high"] = Series(
+        input_schema.smoothing_moving_average_method(candlesticks.high.values, input_schema.period)
+    )
+    candlesticks[f"{prefix}_low"] = Series(
+        input_schema.smoothing_moving_average_method(candlesticks.low.values, input_schema.period)
+    )
+    candlesticks[f"{prefix}_close"] = Series(
+        input_schema.smoothing_moving_average_method(candlesticks.close.values, input_schema.period)
+    )
+    return candlesticks

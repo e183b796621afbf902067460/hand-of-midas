@@ -61,6 +61,7 @@ async def main(cash: int | float, commission: float) -> None:
     candlesticks["datetime"] = to_datetime(candlesticks["datetime"])
     candlesticks.set_index(keys="datetime", inplace=True)
 
+    # pylint: disable=duplicate-code
     backtest: Backtest = Backtest(
         data=candlesticks,
         strategy=FirstStrategy,
@@ -74,6 +75,7 @@ async def main(cash: int | float, commission: float) -> None:
 
     statistics.to_csv("statistics.csv")
     statistics["_trades"].to_csv("trades.csv", index=False)
+    # pylint: enable=duplicate-code
 
 
 # pylint: enable=too-many-locals

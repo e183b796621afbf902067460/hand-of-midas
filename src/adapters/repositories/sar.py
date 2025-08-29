@@ -15,10 +15,8 @@ class SARRepository(ClickHouseBaseRepository):
                 interval,
 
                 global_sma_sar,
-
                 macro_trima_sar,
                 macro_tema_sar,
-
                 micro_trima_sar,
                 micro_tema_sar,
 

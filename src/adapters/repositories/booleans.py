@@ -16,12 +16,16 @@ class BooleansRepository(ClickHouseBaseRepository):
                 interval,
 
                 is_global_sma_close_greater_than_global_sma_open,
-
                 is_macro_trima_close_greater_than_macro_trima_open,
                 is_macro_tema_close_greater_than_macro_tema_open,
-
                 is_micro_trima_close_greater_than_micro_trima_open,
                 is_micro_tema_close_greater_than_micro_tema_open,
+
+                is_global_sma_low_greater_than_global_sma_sar,
+                is_macro_trima_low_greater_than_macro_trima_sar,
+                is_macro_tema_low_greater_than_macro_tema_sar,
+                is_micro_trima_low_greater_than_micro_trima_sar,
+                is_micro_tema_low_greater_than_micro_tema_sar,
 
                 datetime
             FROM

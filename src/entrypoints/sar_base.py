@@ -10,7 +10,7 @@ from src.adapters.repositories.smoothing import SmoothedCandlesticksRepository
 from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
 from src.schemas.sar import SARInputSchema
 from src.schemas.smoothing import SmoothedCandlesticksQueryInputSchema
-from src.services.sar import SARService
+from src.services.sar import SARService, compute_sar
 from src.services.smoothing import SmoothingService
 from src.settings import settings
 
@@ -47,26 +47,26 @@ async def main() -> None:
     )
     # pylint: enable=duplicate-code
 
-    sar: DataFrame = SARService.compute_sar(
-        candlesticks=smoothed_candlesticks.copy(deep=True),
+    sar: DataFrame = compute_sar(
+        candlesticks=smoothed_candlesticks,
         input_schema=SARInputSchema(prefix="global_sma"),
     )
 
-    sar = SARService.compute_sar(
-        candlesticks=sar.copy(deep=True),
+    sar = compute_sar(
+        candlesticks=sar,
         input_schema=SARInputSchema(prefix="macro_trima"),
     )
-    sar = SARService.compute_sar(
-        candlesticks=sar.copy(deep=True),
+    sar = compute_sar(
+        candlesticks=sar,
         input_schema=SARInputSchema(prefix="macro_tema"),
     )
 
-    sar = SARService.compute_sar(
-        candlesticks=sar.copy(deep=True),
+    sar = compute_sar(
+        candlesticks=sar,
         input_schema=SARInputSchema(prefix="micro_trima"),
     )
-    sar = SARService.compute_sar(
-        candlesticks=sar.copy(deep=True),
+    sar = compute_sar(
+        candlesticks=sar,
         input_schema=SARInputSchema(prefix="micro_tema"),
     )
 

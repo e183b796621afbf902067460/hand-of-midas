@@ -21,12 +21,13 @@ class SARService:
     async def load_sar(self, sar: DataFrame) -> None:
         await self._repository.insert_sar(sar=sar)
 
-    @staticmethod
-    def compute_sar(candlesticks: DataFrame, input_schema: SARInputSchema) -> DataFrame:
-        candlesticks[f"{input_schema.prefix}_sar"] = SAR(
-            high=candlesticks[f"{input_schema.prefix}_high"],
-            low=candlesticks[f"{input_schema.prefix}_low"],
-            acceleration=input_schema.acceleration,
-            maximum=input_schema.maximum,
-        )
-        return candlesticks
+
+def compute_sar(candlesticks: DataFrame, input_schema: SARInputSchema) -> DataFrame:
+    column: str = f"{input_schema.prefix}_sar"
+    candlesticks[column] = SAR(
+        high=candlesticks[f"{input_schema.prefix}_high"],
+        low=candlesticks[f"{input_schema.prefix}_low"],
+        acceleration=input_schema.acceleration,
+        maximum=input_schema.maximum,
+    )
+    return candlesticks

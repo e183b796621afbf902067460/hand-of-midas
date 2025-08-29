@@ -11,7 +11,7 @@ from src.schemas.booleans import BooleansQueryInputSchema
 from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
 from src.schemas.streaks import StreaksInputSchema
 from src.services.booleans import BooleansService
-from src.services.streaks import StreaksService
+from src.services.streaks import StreaksService, compute_streak
 from src.settings import settings
 
 
@@ -29,27 +29,48 @@ async def main() -> None:
         )
     )
 
-    streaks: DataFrame = StreaksService.compute_streak(
-        booleans=booleans.copy(deep=True),
+    # `Green Candle Streak`
+    streaks: DataFrame = compute_streak(
+        booleans=booleans,
         input_schema=StreaksInputSchema(boolean_column="is_global_sma_close_greater_than_global_sma_open"),
     )
-
-    streaks = StreaksService.compute_streak(
-        booleans=streaks.copy(deep=True),
+    streaks = compute_streak(
+        booleans=streaks,
         input_schema=StreaksInputSchema(boolean_column="is_macro_trima_close_greater_than_macro_trima_open"),
     )
-    streaks = StreaksService.compute_streak(
-        booleans=streaks.copy(deep=True),
+    streaks = compute_streak(
+        booleans=streaks,
         input_schema=StreaksInputSchema(boolean_column="is_macro_tema_close_greater_than_macro_tema_open"),
     )
-
-    streaks = StreaksService.compute_streak(
-        booleans=streaks.copy(deep=True),
+    streaks = compute_streak(
+        booleans=streaks,
         input_schema=StreaksInputSchema(boolean_column="is_micro_trima_close_greater_than_micro_trima_open"),
     )
-    streaks = StreaksService.compute_streak(
-        booleans=streaks.copy(deep=True),
+    streaks = compute_streak(
+        booleans=streaks,
         input_schema=StreaksInputSchema(boolean_column="is_micro_tema_close_greater_than_micro_tema_open"),
+    )
+
+    # `SAR Streak`
+    streaks = compute_streak(
+        booleans=streaks,
+        input_schema=StreaksInputSchema(boolean_column="is_global_sma_low_greater_than_global_sma_sar"),
+    )
+    streaks = compute_streak(
+        booleans=streaks,
+        input_schema=StreaksInputSchema(boolean_column="is_macro_trima_low_greater_than_macro_trima_sar"),
+    )
+    streaks = compute_streak(
+        booleans=streaks,
+        input_schema=StreaksInputSchema(boolean_column="is_macro_tema_low_greater_than_macro_tema_sar"),
+    )
+    streaks = compute_streak(
+        booleans=streaks,
+        input_schema=StreaksInputSchema(boolean_column="is_micro_trima_low_greater_than_micro_trima_sar"),
+    )
+    streaks = compute_streak(
+        booleans=streaks,
+        input_schema=StreaksInputSchema(boolean_column="is_micro_tema_low_greater_than_micro_tema_sar"),
     )
 
     streaks.drop(
@@ -59,6 +80,11 @@ async def main() -> None:
             "is_macro_tema_close_greater_than_macro_tema_open",
             "is_micro_trima_close_greater_than_micro_trima_open",
             "is_micro_tema_close_greater_than_micro_tema_open",
+            "is_global_sma_low_greater_than_global_sma_sar",
+            "is_macro_trima_low_greater_than_macro_trima_sar",
+            "is_macro_tema_low_greater_than_macro_tema_sar",
+            "is_micro_trima_low_greater_than_micro_trima_sar",
+            "is_micro_tema_low_greater_than_micro_tema_sar",
         ],
         axis=1,
         inplace=True,

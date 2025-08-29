@@ -62,6 +62,7 @@ async def main(cash: int | float, commission: float) -> None:
     candlesticks.set_index(keys="datetime", inplace=True)
     candlesticks.dropna(inplace=True)
 
+    # pylint: disable=duplicate-code
     backtest: Backtest = Backtest(
         data=candlesticks,
         strategy=SARStrategy,
@@ -70,11 +71,12 @@ async def main(cash: int | float, commission: float) -> None:
         trade_on_close=False,
         hedging=False,
     )
-    statistics: Series = backtest.run(candle_prefix="micro_trima")
+    statistics: Series = backtest.run(candle_prefix="macro_tema")
     backtest.plot(resample="W", filename="SARStrategy.html")
 
     statistics.to_csv("statistics.csv")
     statistics["_trades"].to_csv("trades.csv", index=False)
+    # pylint: enable=duplicate-code
 
 
 # pylint: enable=too-many-locals

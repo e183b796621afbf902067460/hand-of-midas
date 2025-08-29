@@ -20,13 +20,14 @@ class StreaksService:
     async def load_streaks(self, streaks: DataFrame) -> None:
         await self._repository.insert_streaks(streaks=streaks)
 
-    @staticmethod
-    def compute_streak(booleans: DataFrame, input_schema: StreaksInputSchema) -> DataFrame:
-        booleans["streak_start"] = booleans[input_schema.boolean_column].ne(
-            other=booleans[input_schema.boolean_column].shift(1)
-        )
-        booleans["streak_id"] = booleans["streak_start"].cumsum()
-        booleans[f"{input_schema.boolean_column}_streak"] = booleans.groupby("streak_id").cumcount() + 1
 
-        booleans.drop(columns=["streak_start", "streak_id"], axis=1, inplace=True)
-        return booleans
+def compute_streak(booleans: DataFrame, input_schema: StreaksInputSchema) -> DataFrame:
+    column: str = f"{input_schema.boolean_column}_streak"
+    booleans["streak_start"] = booleans[input_schema.boolean_column].ne(
+        other=booleans[input_schema.boolean_column].shift(1)
+    )
+    booleans["streak_id"] = booleans["streak_start"].cumsum()
+    booleans[column] = booleans.groupby("streak_id").cumcount() + 1
+
+    booleans.drop(columns=["streak_start", "streak_id"], axis=1, inplace=True)
+    return booleans

@@ -8,11 +8,12 @@ from talib._ta_lib import SMA, TEMA, TRIMA  # noqa: WPS436
 from src.adapters.repositories.candlesticks import CandlesticksRepository
 from src.adapters.repositories.common.clickhouse_base import get_clickhouse_client
 from src.adapters.repositories.smoothing import SmoothedCandlesticksRepository
+from src.entrypoints.common.base import GLOBAL_PERIOD, MACRO_PERIOD, MICRO_PERIOD
 from src.schemas.candlesticks import CandlesticksQueryInputSchema
 from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
 from src.schemas.smoothing import SmoothingInputSchema
 from src.services.candlesticks import CandlesticksService
-from src.services.smoothing import SmoothingService
+from src.services.smoothing import SmoothingService, compute_smoothed_candlesticks
 from src.settings import settings
 
 
@@ -34,27 +35,27 @@ async def main() -> None:
         )
     )
 
-    smoothed_candlesticks: DataFrame = SmoothingService.compute_smoothed_candlesticks(
-        candlesticks=candlesticks.copy(deep=True),
-        input_schema=SmoothingInputSchema(prefix="global", smoothing_moving_average_method=SMA, period=2**10),
+    smoothed_candlesticks: DataFrame = compute_smoothed_candlesticks(
+        candlesticks=candlesticks,
+        input_schema=SmoothingInputSchema(prefix="global", smoothing_moving_average_method=SMA, period=GLOBAL_PERIOD),
     )
 
-    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
-        candlesticks=smoothed_candlesticks.copy(deep=True),
-        input_schema=SmoothingInputSchema(prefix="macro", smoothing_moving_average_method=TRIMA, period=2**8),
+    smoothed_candlesticks = compute_smoothed_candlesticks(
+        candlesticks=smoothed_candlesticks,
+        input_schema=SmoothingInputSchema(prefix="macro", smoothing_moving_average_method=TRIMA, period=MACRO_PERIOD),
     )
-    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
-        candlesticks=smoothed_candlesticks.copy(deep=True),
-        input_schema=SmoothingInputSchema(prefix="macro", smoothing_moving_average_method=TEMA, period=2**8),
+    smoothed_candlesticks = compute_smoothed_candlesticks(
+        candlesticks=smoothed_candlesticks,
+        input_schema=SmoothingInputSchema(prefix="macro", smoothing_moving_average_method=TEMA, period=MACRO_PERIOD),
     )
 
-    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
-        candlesticks=smoothed_candlesticks.copy(deep=True),
-        input_schema=SmoothingInputSchema(prefix="micro", smoothing_moving_average_method=TRIMA, period=2**4),
+    smoothed_candlesticks = compute_smoothed_candlesticks(
+        candlesticks=smoothed_candlesticks,
+        input_schema=SmoothingInputSchema(prefix="micro", smoothing_moving_average_method=TRIMA, period=MICRO_PERIOD),
     )
-    smoothed_candlesticks = SmoothingService.compute_smoothed_candlesticks(
-        candlesticks=smoothed_candlesticks.copy(deep=True),
-        input_schema=SmoothingInputSchema(prefix="micro", smoothing_moving_average_method=TEMA, period=2**4),
+    smoothed_candlesticks = compute_smoothed_candlesticks(
+        candlesticks=smoothed_candlesticks,
+        input_schema=SmoothingInputSchema(prefix="micro", smoothing_moving_average_method=TEMA, period=MICRO_PERIOD),
     )
 
     smoothed_candlesticks.drop(columns=["open", "high", "low", "close"], axis=1, inplace=True)

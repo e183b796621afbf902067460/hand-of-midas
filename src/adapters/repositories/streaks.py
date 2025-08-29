@@ -15,12 +15,16 @@ class StreaksRepository(ClickHouseBaseRepository):
                 interval,
 
                 is_global_sma_close_greater_than_global_sma_open_streak,
-
                 is_macro_trima_close_greater_than_macro_trima_open_streak,
                 is_macro_tema_close_greater_than_macro_tema_open_streak,
-
                 is_micro_trima_close_greater_than_micro_trima_open_streak,
                 is_micro_tema_close_greater_than_micro_tema_open_streak,
+
+                is_global_sma_low_greater_than_global_sma_sar_streak,
+                is_macro_trima_low_greater_than_macro_trima_sar_streak,
+                is_macro_tema_low_greater_than_macro_tema_sar_streak,
+                is_micro_trima_low_greater_than_micro_trima_sar_streak,
+                is_micro_tema_low_greater_than_micro_tema_sar_streak,
 
                 datetime
             FROM
