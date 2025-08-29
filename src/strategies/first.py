@@ -27,7 +27,7 @@ class FirstStrategy(Strategy):
 
     def init(self) -> None:
         self._boolean_column: str = f"is_{self.candle_prefix}_close_greater_than_{self.candle_prefix}_open"
-        self._streak_column: str = f"is_{self.candle_prefix}_close_greater_than_{self.candle_prefix}_open_streak"
+        self._streak_column: str = f"{self._boolean_column}_streak"
         self._allocation_percentage: float = self.allocation_percentage / 10**2
 
     def next(self) -> None:

@@ -10,13 +10,16 @@ from src.adapters.repositories.booleans import BooleansRepository
 from src.adapters.repositories.candlesticks import CandlesticksRepository
 from src.adapters.repositories.common.clickhouse_base import get_clickhouse_client
 from src.adapters.repositories.sar import SARRepository
+from src.adapters.repositories.streaks import StreaksRepository
 from src.schemas.booleans import BooleansQueryInputSchema
 from src.schemas.candlesticks import CandlesticksQueryInputSchema
 from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
 from src.schemas.sar import SARQueryInputSchema
+from src.schemas.streaks import StreaksQueryInputSchema
 from src.services.booleans import BooleansService
 from src.services.candlesticks import CandlesticksService
 from src.services.sar import SARService
+from src.services.streaks import StreaksService
 from src.settings import settings
 from src.strategies.sar import SARStrategy
 
@@ -30,6 +33,7 @@ async def main(cash: int | float, commission: float) -> None:
         repository=CandlesticksRepository(client=clickhouse_client)
     )
     booleans_service: BooleansService = BooleansService(repository=BooleansRepository(client=clickhouse_client))
+    streaks_service: StreaksService = StreaksService(repository=StreaksRepository(client=clickhouse_client))
     sar_service: SARService = SARService(repository=SARRepository(client=clickhouse_client))
 
     candlesticks: DataFrame = await candlesticks_service.extract_candlesticks(
@@ -43,6 +47,11 @@ async def main(cash: int | float, commission: float) -> None:
             ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
         )
     )
+    streaks: DataFrame = await streaks_service.extract_streaks(
+        input_schema=StreaksQueryInputSchema(
+            ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
+        )
+    )
     sar: DataFrame = await sar_service.extract_sar(
         input_schema=SARQueryInputSchema(
             ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
@@ -53,6 +62,9 @@ async def main(cash: int | float, commission: float) -> None:
 
     candlesticks = candlesticks.merge(
         right=booleans, how="left", on=["exchange", "section", "ticker", "interval", "datetime"]
+    )
+    candlesticks = candlesticks.merge(
+        right=streaks, how="left", on=["exchange", "section", "ticker", "interval", "datetime"]
     )
     candlesticks = candlesticks.merge(
         right=sar, how="left", on=["exchange", "section", "ticker", "interval", "datetime"]

@@ -18,27 +18,16 @@ class SARStrategy(Strategy):
     # pylint: enable=protected-access
 
     def _is_up_reversal(self) -> bool:
-        try:
-            is_up_reversal: bool = (
-                self._data[self._sar_column][-1] > self._data[self._sar_column][-2]
-                and self._data[self._sar_column][-2] < self._data[self._sar_column][-3]
-            )
-        except IndexError:
-            is_up_reversal = False
-        return is_up_reversal
+        return bool(self._data[self._boolean_column][-1] and self._data[self._streak_column][-1] == 1)  # noqa: WPS221
 
     def _is_down_reversal(self) -> bool:
-        try:
-            is_down_reversal: bool = (
-                self._data[self._sar_column][-1] < self._data[self._sar_column][-2]
-                and self._data[self._sar_column][-2] > self._data[self._sar_column][-3]
-            )
-        except IndexError:
-            is_down_reversal = False
-        return is_down_reversal
+        return bool(
+            not self._data[self._boolean_column][-1] and self._data[self._streak_column][-1] == 1  # noqa: WPS221
+        )
 
     def init(self) -> None:
-        self._sar_column: str = f"{self.candle_prefix}_sar"
+        self._boolean_column: str = f"is_{self.candle_prefix}_low_greater_than_{self.candle_prefix}_sar"
+        self._streak_column: str = f"{self._boolean_column}_streak"
         self._allocation_percentage: float = self.allocation_percentage / 10**2
 
     def next(self) -> None:
