@@ -1,6 +1,5 @@
 # pylint: disable=duplicate-code
 from asyncio import run
-from typing import Final
 
 from backtesting import Backtest
 from clickhouse_connect.driver.asyncclient import AsyncClient as AsyncClickHouseClient
@@ -10,6 +9,7 @@ from src.adapters.repositories.booleans import BooleansRepository
 from src.adapters.repositories.candlesticks import CandlesticksRepository
 from src.adapters.repositories.common.clickhouse_base import get_clickhouse_client
 from src.adapters.repositories.streaks import StreaksRepository
+from src.backtests.common.base import CASH, COMMISSION
 from src.schemas.booleans import BooleansQueryInputSchema
 from src.schemas.candlesticks import CandlesticksQueryInputSchema
 from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
@@ -18,7 +18,7 @@ from src.services.booleans import BooleansService
 from src.services.candlesticks import CandlesticksService
 from src.services.streaks import StreaksService
 from src.settings import settings
-from src.strategies.first import FirstStrategy
+from src.strategies.common.first_base import FirstStrategyBase
 
 
 # pylint: disable=too-many-locals
@@ -49,22 +49,16 @@ async def main(cash: int | float, commission: float) -> None:
         )
     )
 
-    # pylint: enable=duplicate-code
-
-    candlesticks = candlesticks.merge(
-        right=booleans, how="left", on=["exchange", "section", "ticker", "interval", "datetime"]
-    )
-    candlesticks = candlesticks.merge(
-        right=streaks, how="left", on=["exchange", "section", "ticker", "interval", "datetime"]
-    )
+    merge_on: list[str] = ["exchange", "section", "ticker", "interval", "datetime"]
+    candlesticks = candlesticks.merge(right=booleans, how="left", on=merge_on)
+    candlesticks = candlesticks.merge(right=streaks, how="left", on=merge_on)
 
     candlesticks["datetime"] = to_datetime(candlesticks["datetime"])
     candlesticks.set_index(keys="datetime", inplace=True)
 
-    # pylint: disable=duplicate-code
     backtest: Backtest = Backtest(
         data=candlesticks,
-        strategy=FirstStrategy,
+        strategy=FirstStrategyBase,
         cash=cash,
         commission=commission,
         trade_on_close=False,
@@ -75,13 +69,9 @@ async def main(cash: int | float, commission: float) -> None:
 
     statistics.to_csv("statistics.csv")
     statistics["_trades"].to_csv("trades.csv", index=False)
-    # pylint: enable=duplicate-code
 
 
-# pylint: enable=too-many-locals
+# pylint: enable=too-many-locals,duplicate-code
 
 if __name__ == "__main__":
-    _CASH: Final[int] = 1_000_000
-    _COMMISSION: Final[float] = 0.000550
-
-    run(main=main(cash=_CASH, commission=_COMMISSION))
+    run(main=main(cash=CASH, commission=COMMISSION))

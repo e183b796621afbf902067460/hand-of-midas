@@ -1,42 +1,40 @@
 # pylint: disable=duplicate-code
-from backtesting import Strategy
-from numpy import ceil
+from src.strategies.common.base import compute_size
+from src.strategies.common.sar_base import SARStrategyBase
 
 
-# pylint: disable=attribute-defined-outside-init
-class SARStrategy(Strategy):
+class SARStrategy(SARStrategyBase):
 
-    candle_prefix: str = "global_sma"
-    allocation_percentage: int = 80
+    rsi_threshold: int = 30
+    rsi_column: str = "global_sma_sar_rsi"
 
-    # pylint: disable=protected-access
-    def _compute_size(self) -> int:
-        price: float = self.data.Open[-1]
-        allocation: float = self._broker._cash * self._allocation_percentage
-        return int(ceil(allocation / price))
-
-    # pylint: enable=protected-access
-
-    def _is_up_reversal(self) -> bool:
-        return bool(self._data[self._boolean_column][-1] and self._data[self._streak_column][-1] == 1)  # noqa: WPS221
-
-    def _is_down_reversal(self) -> bool:
-        return bool(
-            not self._data[self._boolean_column][-1] and self._data[self._streak_column][-1] == 1  # noqa: WPS221
-        )
-
+    # pylint: disable=attribute-defined-outside-init
     def init(self) -> None:
-        self._boolean_column: str = f"is_{self.candle_prefix}_low_greater_than_{self.candle_prefix}_sar"
-        self._streak_column: str = f"{self._boolean_column}_streak"
-        self._allocation_percentage: float = self.allocation_percentage / 10**2
+        SARStrategyBase.init(self)
+        self._is_upper_reversal: bool | None = None
+
+    @property
+    def _latest_rsi(self) -> float:
+        return float(self.data[self.rsi_column][-1])
 
     def next(self) -> None:
         if self._is_up_reversal():
+            self._is_upper_reversal = True
+
+        if self._is_upper_reversal and self._latest_rsi < self.rsi_threshold and not self.position:
             self.position.close()
-            self.buy(size=self._compute_size())
+            self.buy(
+                size=compute_size(
+                    price=self._latest_close, cash=self._cash, allocation_percentage=self._allocation_percentage
+                )
+            )
+            self._is_upper_reversal = False
 
         if self._is_down_reversal():
             self.position.close()
+            self._is_upper_reversal = False
+
+    # pylint: enable=attribute-defined-outside-init
 
 
-# pylint: enable=attribute-defined-outside-init,duplicate-code
+# pylint: enable=duplicate-code
