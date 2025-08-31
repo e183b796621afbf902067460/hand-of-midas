@@ -3,6 +3,10 @@
 from src.strategies.common.base import StrategyBase, compute_size
 
 
+def _is_stop_and_reverse(streak: int) -> bool:
+    return bool(streak == 1)
+
+
 class SARStrategyBase(StrategyBase):
 
     sar_prefix: str = "global_sma"
@@ -23,14 +27,14 @@ class SARStrategyBase(StrategyBase):
     def _latest_streak(self) -> int:
         return int(self._data[self._streak_column][-1])
 
-    def _is_up_reversal(self) -> bool:
-        return bool(self._latest_boolean and self._latest_streak == 1)  # noqa: WPS221
+    def _is_bull_reversal(self) -> bool:
+        return bool(self._latest_boolean and _is_stop_and_reverse(streak=self._latest_streak))  # noqa: WPS221
 
-    def _is_down_reversal(self) -> bool:
-        return bool(not self._latest_boolean and self._latest_streak == 1)  # noqa: WPS221
+    def _is_bear_reversal(self) -> bool:
+        return bool(not self._latest_boolean and _is_stop_and_reverse(streak=self._latest_streak))  # noqa: WPS221
 
     def next(self) -> None:
-        if self._is_up_reversal():
+        if self._is_bull_reversal():
             self.position.close()
             self.buy(
                 size=compute_size(
@@ -38,7 +42,7 @@ class SARStrategyBase(StrategyBase):
                 )
             )
 
-        if self._is_down_reversal():
+        if self._is_bear_reversal():
             self.position.close()
 
 
