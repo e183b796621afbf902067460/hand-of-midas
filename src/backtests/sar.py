@@ -12,7 +12,7 @@ from src.adapters.repositories.rsi import RSIRepository
 from src.adapters.repositories.sar import SARRepository
 from src.adapters.repositories.smoothing import SmoothedCandlesticksRepository
 from src.adapters.repositories.streaks import StreaksRepository
-from src.backtests.common.base import CASH, COMMISSION
+from src.backtests.common.base import CASH, COMMISSION, SPREAD
 from src.schemas.booleans import BooleansQueryInputSchema
 from src.schemas.candlesticks import CandlesticksQueryInputSchema
 from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
@@ -27,11 +27,11 @@ from src.services.sar import SARService
 from src.services.smoothing import SmoothingService
 from src.services.streaks import StreaksService
 from src.settings import settings
-from src.strategies.sar import SARStrategy
+from src.strategies.sar import MixinSARStrategy
 
 
 # pylint: disable=too-many-locals,too-many-statements
-async def main(cash: int | float, commission: float) -> None:
+async def main(cash: int | float, commission: float, spread: float) -> None:
     section: BinanceSectionEnum = BinanceSectionEnum(value=settings.BINANCE_SECTION_NAME)  # type: ignore[call-overload]
     interval: BinanceIntervalEnum = BinanceIntervalEnum(value=settings.INTERVAL)  # type: ignore[call-overload]
     clickhouse_client: AsyncClickHouseClient = await get_clickhouse_client()
@@ -92,20 +92,23 @@ async def main(cash: int | float, commission: float) -> None:
 
     backtest: Backtest = Backtest(
         data=candlesticks,
-        strategy=SARStrategy,
+        strategy=MixinSARStrategy,
         cash=cash,
         commission=commission,
+        spread=spread,
         trade_on_close=False,
         hedging=False,
+        finalize_trades=True,
     )
-    statistics: Series = backtest.run(sar_prefix="macro_tema", rsi_column="macro_trima_low_rsi")
-    backtest.plot(resample="W", filename="SARStrategy.html")
-
+    statistics: Series = backtest.run(sar_on_long="micro_tema", sar_on_short="micro_tema")
     statistics.to_csv("statistics.csv")
-    statistics["_trades"].to_csv("trades.csv", index=False)
+    trades: DataFrame = statistics["_trades"]
+    trades.to_csv("trades.csv")
+
+    backtest.plot(resample="W", filename="SARStrategy.html")
 
 
 # pylint: enable=too-many-locals,too-many-statements,duplicate-code
 
 if __name__ == "__main__":
-    run(main=main(cash=CASH, commission=COMMISSION))
+    run(main=main(cash=CASH, commission=COMMISSION, spread=SPREAD))

@@ -8,17 +8,20 @@ from pandas import DataFrame, Series, to_datetime  # noqa: WPS347
 from src.adapters.repositories.booleans import BooleansRepository
 from src.adapters.repositories.candlesticks import CandlesticksRepository
 from src.adapters.repositories.common.clickhouse_base import get_clickhouse_client
+from src.adapters.repositories.smoothing import SmoothedCandlesticksRepository
 from src.adapters.repositories.streaks import StreaksRepository
 from src.backtests.common.base import CASH, COMMISSION
 from src.schemas.booleans import BooleansQueryInputSchema
 from src.schemas.candlesticks import CandlesticksQueryInputSchema
 from src.schemas.common.binance_base import BinanceIntervalEnum, BinanceSectionEnum
+from src.schemas.smoothing import SmoothedCandlesticksQueryInputSchema
 from src.schemas.streaks import StreaksQueryInputSchema
 from src.services.booleans import BooleansService
 from src.services.candlesticks import CandlesticksService
+from src.services.smoothing import SmoothingService
 from src.services.streaks import StreaksService
 from src.settings import settings
-from src.strategies.common.sar_base import SARStrategyBase
+from src.strategies.common.sar_base import BullishSARStrategy
 
 
 # pylint: disable=too-many-locals
@@ -30,6 +33,9 @@ async def main(cash: int | float, commission: float) -> None:
     booleans_service: BooleansService = BooleansService(repository=BooleansRepository(client=clickhouse_client))
     candlesticks_service: CandlesticksService = CandlesticksService(
         repository=CandlesticksRepository(client=clickhouse_client)
+    )
+    smoothing_service: SmoothingService = SmoothingService(
+        repository=SmoothedCandlesticksRepository(client=clickhouse_client)
     )
     streaks_service: StreaksService = StreaksService(repository=StreaksRepository(client=clickhouse_client))
 
@@ -44,6 +50,11 @@ async def main(cash: int | float, commission: float) -> None:
         )
     )
     candlesticks.rename(mapper={"open": "Open", "high": "High", "low": "Low", "close": "Close"}, axis=1, inplace=True)
+    smoothed_candlesticks: DataFrame = await smoothing_service.extract_smoothed_candlesticks(
+        input_schema=SmoothedCandlesticksQueryInputSchema(
+            ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
+        )
+    )
     streaks: DataFrame = await streaks_service.extract_streaks(
         input_schema=StreaksQueryInputSchema(
             ticker=settings.TICKER, exchange=settings.BINANCE_EXCHANGE_NAME, section=section, interval=interval
@@ -52,6 +63,7 @@ async def main(cash: int | float, commission: float) -> None:
 
     merge_on: list[str] = ["exchange", "section", "ticker", "interval", "datetime"]
     candlesticks = candlesticks.merge(right=booleans, how="left", on=merge_on)
+    candlesticks = candlesticks.merge(right=smoothed_candlesticks, how="left", on=merge_on)
     candlesticks = candlesticks.merge(right=streaks, how="left", on=merge_on)
 
     candlesticks["datetime"] = to_datetime(candlesticks["datetime"])
@@ -60,13 +72,13 @@ async def main(cash: int | float, commission: float) -> None:
 
     backtest: Backtest = Backtest(
         data=candlesticks,
-        strategy=SARStrategyBase,
+        strategy=BullishSARStrategy,
         cash=cash,
         commission=commission,
         trade_on_close=False,
         hedging=False,
     )
-    statistics: Series = backtest.run(sar_prefix="macro_tema")
+    statistics: Series = backtest.run(sar_on_long="micro_tema")
     backtest.plot(resample="W", filename="SARStrategyBase.html")
 
     statistics.to_csv("statistics.csv")

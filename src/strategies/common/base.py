@@ -19,20 +19,8 @@ class StrategyBase(Strategy):
     # pylint: enable=protected-access
 
     @property
-    def _latest_open(self) -> float:
-        return float(self.data.Open[-1])
-
-    @property
-    def _latest_high(self) -> float:
-        return float(self.data.High[-1])
-
-    @property
-    def _latest_low(self) -> float:
-        return float(self.data.Low[-1])
-
-    @property
-    def _latest_close(self) -> float:
-        return float(self.data.Close[-1])
+    def _latest_global_sma(self) -> float:
+        return float(self.data["global_sma_close"][-1] + self.data["global_sma_open"][-1]) / 2  # noqa: WPS221
 
     def next(self) -> None:
         ...
