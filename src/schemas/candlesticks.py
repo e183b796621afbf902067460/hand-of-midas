@@ -1,29 +1,9 @@
-from pydantic import BaseModel
-
-from src.schemas.binance import BinanceIntervalEnum, BinanceSectionEnum
+from src.schemas.common.query_base import QueryInputBaseSchema
 
 
-class CandlesticksLatestTimestampInputSchema(BaseModel):
+class CandlesticksLatestTimestampQueryInputSchema(QueryInputBaseSchema):
     """Input schema to get latest loaded candlesticks timestamp."""
 
-    ticker: str
-    exchange: str
-    section: BinanceSectionEnum
 
-    interval: BinanceIntervalEnum
-
-    class Config:
-        use_enum_values: bool = True
-
-
-class CandlesticksInputSchema(BaseModel):
+class CandlesticksQueryInputSchema(QueryInputBaseSchema):
     """Input schema to get latest loaded candlesticks."""
-
-    ticker: str
-    exchange: str
-    section: BinanceSectionEnum
-
-    interval: BinanceIntervalEnum
-
-    class Config:
-        use_enum_values: bool = True

@@ -131,4 +131,5 @@ dmypy.json
 .vscode/
 .env
 *.csv
+*.html
 draft.ipynb

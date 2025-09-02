@@ -20,7 +20,7 @@ def unix_epoch_to_none(timestamp: datetime) -> datetime | None:
 
 
 async def get_clickhouse_client() -> AsyncClient:
-    return await get_async_client(dsn=settings.CLICKHOUSE_DSN.unicode_string())
+    return await get_async_client(dsn=settings.CLICKHOUSE_DSN.unicode_string())  # pylint: disable=no-member
 
 
 @attrs(slots=True, auto_attribs=True, kw_only=True)
@@ -30,6 +30,10 @@ class ClickHouseBaseRepository:
 
     async def _query(self, query: str, parameters: dict | None = None) -> QueryResult:
         return await self._client.query(query=query, parameters=parameters)
+
+    async def _truncate(self, table: str) -> None:
+        query: str = f"TRUNCATE TABLE IF EXISTS {table};"
+        await self._query(query=query)
 
     async def _query_dataframe(self, query: str, parameters: dict | None = None) -> DataFrame:
         return await self._client.query_df(query=query, parameters=parameters)
